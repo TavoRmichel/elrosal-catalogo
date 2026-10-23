@@ -333,9 +333,9 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
   </div>
 </aside>
 
-<div class="game" id="game" hidden role="dialog" aria-modal="true" aria-label="Juego Atrapa los dulces">
+<div class="game" id="game" hidden role="dialog" aria-modal="true" aria-label="Juego Atrapa el mazapán">
   <div class="g-top">
-    <div class="g-stat"><small>Dulces</small><b id="g-score">0</b></div>
+    <div class="g-stat"><small>Mazapanes</small><b id="g-score">0</b></div>
     <div class="g-stat time"><small>Tiempo</small><b id="g-time">30</b></div>
     <div class="g-stat"><small>Récord</small><b id="g-best">0</b></div>
     <button class="x" type="button" id="g-close" aria-label="Salir del juego">✕</button>
@@ -683,11 +683,11 @@ renderCart();
   });
 })();
 
-/* ---------- Juego: Atrapa los dulces ---------- */
+/* ---------- Juego: Atrapa el mazapán ---------- */
 (function(){
   const game=$("#game"), cv=$("#gc"), ctx=cv.getContext("2d"), ov=$("#g-ov"), card=$("#g-card");
   const DUR=30, BKEY="rosal-juego-record";
-  const SRC=[["pz_mazapan",3,64],["pz_dinoboll",1,46],["pz_picotito_mix",1,62],["pz_picotito_chamoy",1,62],["pz_cacahuate",1,44],["pc_bola0",1,36],["pc_bola5",1,36],["pc_bola10",1,36],["pc_bombon2",1,46],["pc_bombon8",1,40],["pc_bombon14",1,40],["pc_figura3",1,48],["pc_pico1",1,40],["pc_cacahuate4",1,40],["pc_figura5",1,46]];
+  const SRC=[["pz_mazapan",1,58]];
   const pics=SRC.map(([n,pts,sz])=>{const im=new Image(); im.src=IMG(n); return {im,pts,sz};});
   const logo=new Image(); logo.src=IMG("logo");
   let W=0,H=0,dpr=1,S=1, items=[], pops=[], bx=0, tx=0, bw=120, bh=60, squash=0;
@@ -697,7 +697,7 @@ renderCart();
   function resize(){ const r=cv.getBoundingClientRect(); dpr=Math.min(2,devicePixelRatio||1); W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
     S=Math.max(1.1,Math.min(1.6,W/340)); bw=Math.max(96,Math.min(170,W*.3)); bh=bw*.52; if(!bx){bx=tx=W/2;} bx=Math.min(Math.max(bx,bw/2),W-bw/2); tx=Math.min(Math.max(tx,bw/2),W-bw/2); draw(); }
   function basketTop(){ return H-bh-18; }
-  function spawn(){ const p=pics[(Math.random()<.1)?0:1+Math.floor(Math.random()*(pics.length-1))]; const sz=p.sz*S;
+  function spawn(){ const p=pics[0]; const sz=p.sz*S*(.85+Math.random()*.35);
     const prog=1-left/DUR;
     items.push({p,x:sz/2+Math.random()*(W-sz),y:-sz,w:sz,vy:(150+Math.random()*90)*(1+prog*1.3)*S,a:Math.random()*6.28,va:(Math.random()-.5)*3}); }
   function drawBasket(){
@@ -737,11 +737,11 @@ renderCart();
     raf=requestAnimationFrame(step);
   }
   function show(html){ card.innerHTML=html; ov.hidden=false; const b=card.querySelector("button"); b&&b.focus(); }
-  function intro(){ show(`<h2>Atrapa<span>los dulces</span></h2><p>Mueve la canasta con el dedo, el mouse o las flechas. Tienes ${DUR} segundos.</p><p>El Mazapantito vale 3 🌹</p><button class="btn btn-oro" type="button" data-g="start">Jugar</button>`); }
+  function intro(){ show(`<h2>Atrapa<span>el mazapán</span></h2><p>Mueve la canasta con el dedo, el mouse o las flechas y atrapa todos los Mazapantitos que puedas en ${DUR} segundos.</p><button class="btn btn-oro" type="button" data-g="start">Jugar</button>`); }
   function start(){ items=[]; pops=[]; score=0; left=DUR; spawnT=.2; last=0; $("#g-score").textContent=0; ov.hidden=true; running=true; cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
   function end(){ running=false; cancelAnimationFrame(raf); const rec=score>best;
     if(rec){ best=score; try{localStorage.setItem(BKEY,best);}catch(e){} $("#g-best").textContent=best; }
-    show(`<span class="rec">${rec&&score>0?"¡Nuevo récord!":"Récord: "+best}</span><span class="big">${score}</span><p>${score>=40?"¡Eres maestro dulcero! 🍬":score>=20?"¡Bien atrapados!":"Puedes más, échale otra."}</p><button class="btn btn-oro" type="button" data-g="start">Otra vez</button><button class="btn btn-ghost" type="button" data-g="close">Volver al catálogo</button>`); }
+    show(`<span class="rec">${rec&&score>0?"¡Nuevo récord!":"Récord: "+best}</span><span class="big">${score}</span><p>${score>=40?"¡Eres maestro mazapanero! 🌹":score>=20?"¡Bien atrapados!":"Puedes más, échale otra."}</p><button class="btn btn-oro" type="button" data-g="start">Otra vez</button><button class="btn btn-ghost" type="button" data-g="close">Volver al catálogo</button>`); }
   function open(){ game.hidden=false; document.documentElement.style.overflow="hidden"; bx=tx=0; resize(); intro(); }
   function close(){ running=false; cancelAnimationFrame(raf); game.hidden=true; document.documentElement.style.overflow=""; $("#play").focus(); }
   $("#play").addEventListener("click",open);
@@ -754,7 +754,7 @@ renderCart();
     if(e.key==="Escape"){ close(); return; }
     if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ e.preventDefault(); tx=Math.min(Math.max(tx+(e.key==="ArrowLeft"?-1:1)*bw*.6,bw/2),W-bw/2); } });
   addEventListener("resize",()=>{ if(!game.hidden) resize(); });
-  document.addEventListener("visibilitychange",()=>{ if(document.hidden&&running){ running=false; cancelAnimationFrame(raf); show(`<h2>Pausa</h2><p>Llevas ${score} dulces.</p><button class="btn btn-oro" type="button" data-g="resume">Seguir</button>`); } });
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden&&running){ running=false; cancelAnimationFrame(raf); show(`<h2>Pausa</h2><p>Llevas ${score} mazapanes.</p><button class="btn btn-oro" type="button" data-g="resume">Seguir</button>`); } });
   card.addEventListener("click",e=>{ const b=e.target.closest('[data-g="resume"]'); if(b){ e.stopImmediatePropagation(); ov.hidden=true; running=true; last=0; raf=requestAnimationFrame(step);} },true);
 })();
 </script>
