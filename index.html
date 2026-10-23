@@ -131,6 +131,7 @@ main{padding-bottom:120px}
 .card .pic{position:relative;aspect-ratio:1/1;border-radius:19px 19px 14px 14px;overflow:hidden;background:color-mix(in srgb,var(--fc) 22%,var(--surface));display:grid;place-items:center;border:0;padding:0;width:100%;perspective:700px}
 .card .pic::before{content:"";position:absolute;inset:auto 18% 9% 18%;height:12%;border-radius:50%;background:rgba(0,0,0,.18);filter:blur(8px)}
 .card .pic img{position:relative;width:82%;height:82%;object-fit:contain;transition:transform .25s ease;transform:rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg)) translateZ(0)}
+.card .pic img.tall{height:94%;width:auto}
 .card .pic .shine{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--mx,50%) var(--my,30%),rgba(255,255,255,.45),transparent 45%);opacity:0;transition:opacity .2s}
 .card .pic:hover .shine{opacity:1}
 .card .tag-row{position:absolute;top:8px;left:8px;display:flex;flex-wrap:wrap;gap:4px;z-index:2}
@@ -448,7 +449,7 @@ function stepperHTML(code,small){
 function tagsHTML(p){ return p.tags.length?`<div class="tag-row">${p.tags.map(t=>`<span class="tag ${t}">${TAGTXT[t]}</span>`).join("")}</div>`:""; }
 function cardHTML(p){
   return `<article class="card" data-code="${p.code}" data-search="${esc((p.name+" "+p.w+" "+p.code+" "+p.desc+" "+p.f.name+" "+p.tags.map(t=>TAGTXT[t]).join(" ")).toLowerCase())}">
-    <button class="pic" type="button" data-open="${p.code}" aria-label="Ver detalle de ${esc(fullName(p))}">${tagsHTML(p)}<img src="${IMG("p"+p.code)}" alt="${esc(fullName(p))}" loading="lazy" decoding="async"><span class="shine"></span></button>
+    <button class="pic" type="button" data-open="${p.code}" aria-label="Ver detalle de ${esc(fullName(p))}">${tagsHTML(p)}<img src="${IMG("p"+p.code)}" alt="${esc(fullName(p))}" loading="lazy" decoding="async"${p.code==="50100105"?' class="tall"':""}><span class="shine"></span></button>
     <div class="info"><h3>${esc(p.name)}</h3><span class="meta">${esc(p.w)} · Caja: ${esc(p.box)}</span>
     <div class="act" data-act="${p.code}">${stepperHTML(p.code)}</div></div></article>`;
 }
