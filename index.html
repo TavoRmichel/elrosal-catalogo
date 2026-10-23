@@ -20,7 +20,8 @@
 <title>Catálogo El Rosal Tapatío</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chango&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Martian+Mono:wght@400;600&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Chango&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Martian+Mono:wght@400;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chango&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Martian+Mono:wght@400;600&display=swap"></noscript>
 <style>
 /* Layout: hero rojo con lluvia de dulces reales, luego bandas de color por familia (los colores del catálogo impreso) con su rejilla de productos; carrito flotante que arma el mensaje de WhatsApp. */
 :root{
@@ -351,6 +352,9 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
 
 <script>
 /* Número de WhatsApp de ventas con lada de país, solo dígitos (ej. 523312345678). Vacío: WhatsApp pide elegir el contacto. */
+/* Compatibilidad con celulares viejos */
+if(!Object.fromEntries) Object.fromEntries=function(a){var o={};for(var k of a)o[k[0]]=k[1];return o;};
+if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRect) CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h){this.rect(x,y,w,h);};
 const WA_NUMBER = "523334965948";
 
 const IMG = n => "img/" + n + ".webp";
