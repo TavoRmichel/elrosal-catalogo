@@ -748,7 +748,7 @@ renderCart();
   function start(){ items=[]; pops=[]; score=0; left=DUR; spawnT=.2; last=0; $("#g-score").textContent=0; ov.hidden=true; running=true; cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
   function end(){ running=false; cancelAnimationFrame(raf); const rec=score>best;
     if(rec){ best=score; try{localStorage.setItem(BKEY,best);}catch(e){} $("#g-best").textContent=best; }
-    show(`<span class="rec">${rec&&score>0?"¡Nuevo récord!":"Récord: "+best}</span><span class="big">${score}</span><p>${score>=40?"¡Eres maestro mazapanero! 🌹":score>=20?"¡Bien atrapados!":"Puedes más, échale otra."}</p><button class="btn btn-oro" type="button" data-g="start">Otra vez</button><button class="btn btn-ghost" type="button" data-g="close">Volver al catálogo</button>`); }
+    show(`<span class="rec">${rec&&score>0?"¡Nuevo récord!":"Récord: "+best}</span><span class="big">${score}</span><p>${score>=40?"¡Eres maestro mazapanero!":score>=20?"¡Bien atrapados!":"Puedes más, échale otra."}</p><button class="btn btn-oro" type="button" data-g="start">Otra vez</button><button class="btn btn-ghost" type="button" data-g="close">Volver al catálogo</button>`); }
   function open(){ game.hidden=false; document.documentElement.style.overflow="hidden"; bx=tx=0; resize(); intro(); }
   function close(){ running=false; cancelAnimationFrame(raf); game.hidden=true; document.documentElement.style.overflow=""; $("#play").focus(); }
   $("#play").addEventListener("click",open);
