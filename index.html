@@ -213,6 +213,7 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
 .modal .box{pointer-events:auto;width:min(560px,100%);max-height:92vh;overflow-y:auto;background:var(--surface);border-radius:26px 26px 0 0;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (min-width:760px){.modal .box{border-radius:26px;transform:translateY(30px) scale(.96);opacity:0;transition:transform .3s,opacity .3s}}
 .modal.open .box{transform:none;opacity:1}
+.modal:not(.open) .box{pointer-events:none;visibility:hidden;transition-property:transform,opacity,visibility;transition-delay:0s,0s,.35s}
 .modal .hero-pic{position:relative;aspect-ratio:4/3;background:var(--fc);display:grid;place-items:center;overflow:hidden;border-radius:26px 26px 0 0}
 .modal .hero-pic img.main{position:relative;z-index:2;width:72%;height:84%;object-fit:contain;filter:drop-shadow(0 14px 18px rgba(0,0,0,.3));animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
 @keyframes pop{from{transform:scale(.7) rotate(-6deg);opacity:0}}
