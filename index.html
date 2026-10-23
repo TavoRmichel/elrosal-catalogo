@@ -40,6 +40,7 @@
   --rosal:#ef3038; --hoja:#2fbf6b; --wa:#25c463; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
@@ -223,6 +224,27 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
 .specs dd.mono{font-family:var(--f-mono);font-weight:600;font-size:13px}
 
 .flyer{position:fixed;z-index:90;pointer-events:none;object-fit:contain}
+/* ---------- JUEGO ---------- */
+.game{position:fixed;inset:0;z-index:95;background:#b8121a;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.game::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(110% 70% at 80% 0%,#ef3b40 0%,transparent 60%),radial-gradient(90% 60% at 0% 100%,#8e0b12 0%,transparent 60%)}
+.g-top{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:10px var(--gut-r) 6px var(--gut-l)}
+.g-stat{display:grid;line-height:1.05}
+.g-stat small{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
+.g-stat b{font-family:var(--f-display);font-weight:400;font-size:28px;font-variant-numeric:tabular-nums}
+.g-stat.time b{color:var(--oro)}
+.g-top .x{margin-left:auto;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}
+.g-bar{position:relative;z-index:2;height:5px;margin:0 var(--gut-r) 0 var(--gut-l);border-radius:5px;background:rgba(255,255,255,.18);overflow:hidden}
+.g-bar i{display:block;height:100%;width:100%;background:var(--oro);transform-origin:left;transition:transform .2s linear}
+#gc{position:relative;z-index:1;flex:1;width:100%;min-height:0;touch-action:none;cursor:none}
+.g-ov{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);background:rgba(120,6,12,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.g-card{display:grid;gap:12px;justify-items:center;text-align:center;max-width:340px}
+.g-card h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:clamp(40px,12vw,64px);line-height:.9}
+.g-card h2 span{display:block;color:var(--oro);font-size:.6em}
+.g-card p{margin:0;font-size:17px;line-height:1.4;opacity:.95}
+.g-card .big{font-family:var(--f-display);font-size:72px;line-height:1;color:var(--oro)}
+.g-card .btn{font-size:18px;padding:15px 26px}
+.g-card .rec{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .floaty img,.band.burst .floaty{animation:none}
@@ -246,6 +268,7 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
     <div class="hero-cta">
       <a class="btn btn-oro" href="#productos">Ver productos</a>
       <a class="btn btn-ghost" href="#como-pedir">Cómo pedir</a>
+      <button class="btn btn-ghost" type="button" id="play">🧺 Jugar</button>
     </div>
   </div>
   <span class="hint" id="hint">Toca los dulces</span>
@@ -308,6 +331,18 @@ footer .slogan{font-family:var(--f-display);font-size:24px;color:var(--rosal);li
     <div class="foot-row"><span id="foot-note">El pedido llega a ventas ya ordenado.</span><span id="clear-wrap"><button class="linkbtn" id="clear" type="button">Vaciar</button></span></div>
   </div>
 </aside>
+
+<div class="game" id="game" hidden role="dialog" aria-modal="true" aria-label="Juego Atrapa los dulces">
+  <div class="g-top">
+    <div class="g-stat"><small>Dulces</small><b id="g-score">0</b></div>
+    <div class="g-stat time"><small>Tiempo</small><b id="g-time">30</b></div>
+    <div class="g-stat"><small>Récord</small><b id="g-best">0</b></div>
+    <button class="x" type="button" id="g-close" aria-label="Salir del juego">✕</button>
+  </div>
+  <div class="g-bar"><i id="g-bar"></i></div>
+  <canvas id="gc"></canvas>
+  <div class="g-ov" id="g-ov"><div class="g-card" id="g-card"></div></div>
+</div>
 
 <div class="modal" id="modal" aria-hidden="true">
   <div class="box" role="dialog" aria-modal="true" aria-labelledby="m-title" id="m-box"></div>
@@ -645,6 +680,81 @@ renderCart();
       if(d<170){ hit=true; const f=1-d/170; it.vy-=(900+Math.random()*500)*f; it.vx+=(dx/(d||1))*600*f+(Math.random()-.5)*200; it.va+=(Math.random()-.5)*900; } }
     if(hit){ $("#hint").hidden=true; kick(); }
   });
+})();
+
+/* ---------- Juego: Atrapa los dulces ---------- */
+(function(){
+  const game=$("#game"), cv=$("#gc"), ctx=cv.getContext("2d"), ov=$("#g-ov"), card=$("#g-card");
+  const DUR=30, BKEY="rosal-juego-record";
+  const SRC=[["pz_mazapan",3,64],["pz_dinoboll",1,46],["pz_picotito_mix",1,62],["pz_picotito_chamoy",1,62],["pz_cacahuate",1,44],["pc_bola0",1,36],["pc_bola5",1,36],["pc_bola10",1,36],["pc_bombon2",1,46],["pc_bombon8",1,40],["pc_bombon14",1,40],["pc_figura3",1,48],["pc_pico1",1,40],["pc_cacahuate4",1,40],["pc_figura5",1,46]];
+  const pics=SRC.map(([n,pts,sz])=>{const im=new Image(); im.src=IMG(n); return {im,pts,sz};});
+  const logo=new Image(); logo.src=IMG("logo");
+  let W=0,H=0,dpr=1,S=1, items=[], pops=[], bx=0, tx=0, bw=120, bh=60, squash=0;
+  let score=0, left=DUR, running=false, raf=0, last=0, spawnT=0, best=0;
+  try{ best=+localStorage.getItem(BKEY)||0; }catch(e){}
+  $("#g-best").textContent=best;
+  function resize(){ const r=cv.getBoundingClientRect(); dpr=Math.min(2,devicePixelRatio||1); W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    S=Math.max(1.1,Math.min(1.6,W/340)); bw=Math.max(96,Math.min(170,W*.3)); bh=bw*.52; if(!bx){bx=tx=W/2;} bx=Math.min(Math.max(bx,bw/2),W-bw/2); tx=Math.min(Math.max(tx,bw/2),W-bw/2); draw(); }
+  function basketTop(){ return H-bh-18; }
+  function spawn(){ const p=pics[(Math.random()<.1)?0:1+Math.floor(Math.random()*(pics.length-1))]; const sz=p.sz*S;
+    const prog=1-left/DUR;
+    items.push({p,x:sz/2+Math.random()*(W-sz),y:-sz,w:sz,vy:(150+Math.random()*90)*(1+prog*1.3)*S,a:Math.random()*6.28,va:(Math.random()-.5)*3}); }
+  function drawBasket(){
+    const y=basketTop(), x=bx, w=bw*(1+squash*.12), h=bh*(1-squash*.15), top=y+bh-h;
+    ctx.save();
+    ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(x,y+bh+8,w*.48,7,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x-w/2,top); ctx.lineTo(x+w/2,top); ctx.lineTo(x+w*.38,top+h); ctx.lineTo(x-w*.38,top+h); ctx.closePath();
+    const g=ctx.createLinearGradient(0,top,0,top+h); g.addColorStop(0,"#d99a4e"); g.addColorStop(1,"#9a5e22"); ctx.fillStyle=g; ctx.fill();
+    ctx.clip();
+    ctx.strokeStyle="rgba(90,45,10,.55)"; ctx.lineWidth=2;
+    for(let i=1;i<5;i++){ const yy=top+h*i/5; ctx.beginPath(); ctx.moveTo(x-w/2,yy); ctx.lineTo(x+w/2,yy); ctx.stroke(); }
+    for(let i=-6;i<=6;i++){ ctx.beginPath(); ctx.moveTo(x+i*w/12,top); ctx.lineTo(x+i*w/12*.76,top+h); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle="#7a4512"; ctx.beginPath(); ctx.roundRect(x-w/2-4,top-7,w+8,13,7); ctx.fill();
+    ctx.fillStyle="#e7b06a"; ctx.beginPath(); ctx.roundRect(x-w/2-2,top-6,w+4,5,3); ctx.fill();
+    if(logo.complete&&logo.naturalWidth){ const lw=h*.62, lh=lw*logo.naturalHeight/logo.naturalWidth; ctx.drawImage(logo,x-lw/2,top+h*.48-lh/2,lw,lh); }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const it of items){ const im=it.p.im; if(!im.naturalWidth) continue; const h=it.w*im.naturalHeight/im.naturalWidth;
+      ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.a); ctx.shadowColor="rgba(60,0,0,.35)"; ctx.shadowBlur=10; ctx.shadowOffsetY=6; ctx.drawImage(im,-it.w/2,-h/2,it.w,h); ctx.restore(); }
+    drawBasket();
+    for(const p of pops){ ctx.globalAlpha=Math.max(0,p.t); ctx.fillStyle=p.big?"#f6c21c":"#fff"; ctx.font=`${(p.big?34:26)*S}px Chango, "Arial Black", sans-serif`; ctx.textAlign="center"; ctx.fillText(p.txt,p.x,p.y); ctx.globalAlpha=1; }
+  }
+  function step(t){
+    const dt=Math.min(.04,(t-(last||t))/1000); last=t;
+    left=Math.max(0,left-dt); $("#g-time").textContent=Math.ceil(left); $("#g-bar").style.transform=`scaleX(${left/DUR})`;
+    spawnT-=dt; if(spawnT<=0){ spawn(); spawnT=Math.max(.28,.75-(1-left/DUR)*.45)*(.7+Math.random()*.6); }
+    bx+=(tx-bx)*Math.min(1,dt*18); squash=Math.max(0,squash-dt*5);
+    const top=basketTop();
+    for(let i=items.length-1;i>=0;i--){ const it=items[i]; const py=it.y; it.y+=it.vy*dt; it.a+=it.va*dt;
+      if(py<top&&it.y>=top&&Math.abs(it.x-bx)<bw*.5){ score+=it.p.pts; $("#g-score").textContent=score; squash=1; pops.push({x:it.x,y:top-10,t:1,txt:"+"+it.p.pts,big:it.p.pts>1}); items.splice(i,1); continue; }
+      if(it.y-it.w>H) items.splice(i,1); }
+    for(let i=pops.length-1;i>=0;i--){ pops[i].t-=dt*1.6; pops[i].y-=60*dt; if(pops[i].t<=0) pops.splice(i,1); }
+    draw();
+    if(left<=0){ end(); return; }
+    raf=requestAnimationFrame(step);
+  }
+  function show(html){ card.innerHTML=html; ov.hidden=false; const b=card.querySelector("button"); b&&b.focus(); }
+  function intro(){ show(`<h2>Atrapa<span>los dulces</span></h2><p>Mueve la canasta con el dedo, el mouse o las flechas. Tienes ${DUR} segundos.</p><p>El Mazapantito vale 3 🌹</p><button class="btn btn-oro" type="button" data-g="start">Jugar</button>`); }
+  function start(){ items=[]; pops=[]; score=0; left=DUR; spawnT=.2; last=0; $("#g-score").textContent=0; ov.hidden=true; running=true; cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
+  function end(){ running=false; cancelAnimationFrame(raf); const rec=score>best;
+    if(rec){ best=score; try{localStorage.setItem(BKEY,best);}catch(e){} $("#g-best").textContent=best; }
+    show(`<span class="rec">${rec&&score>0?"¡Nuevo récord!":"Récord: "+best}</span><span class="big">${score}</span><p>${score>=40?"¡Eres maestro dulcero! 🍬":score>=20?"¡Bien atrapados!":"Puedes más, échale otra."}</p><button class="btn btn-oro" type="button" data-g="start">Otra vez</button><button class="btn btn-ghost" type="button" data-g="close">Volver al catálogo</button>`); }
+  function open(){ game.hidden=false; document.documentElement.style.overflow="hidden"; bx=tx=0; resize(); intro(); }
+  function close(){ running=false; cancelAnimationFrame(raf); game.hidden=true; document.documentElement.style.overflow=""; $("#play").focus(); }
+  $("#play").addEventListener("click",open);
+  $("#g-close").addEventListener("click",close);
+  card.addEventListener("click",e=>{ const b=e.target.closest("[data-g]"); if(!b) return; b.dataset.g==="start"?start():close(); });
+  function aim(e){ const r=cv.getBoundingClientRect(); tx=Math.min(Math.max(e.clientX-r.left,bw/2),W-bw/2); if(!running) { bx=tx; draw(); } }
+  cv.addEventListener("pointerdown",e=>{ aim(e); cv.setPointerCapture&&cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove",aim);
+  addEventListener("keydown",e=>{ if(game.hidden) return;
+    if(e.key==="Escape"){ close(); return; }
+    if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ e.preventDefault(); tx=Math.min(Math.max(tx+(e.key==="ArrowLeft"?-1:1)*bw*.6,bw/2),W-bw/2); } });
+  addEventListener("resize",()=>{ if(!game.hidden) resize(); });
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden&&running){ running=false; cancelAnimationFrame(raf); show(`<h2>Pausa</h2><p>Llevas ${score} dulces.</p><button class="btn btn-oro" type="button" data-g="resume">Seguir</button>`); } });
+  card.addEventListener("click",e=>{ const b=e.target.closest('[data-g="resume"]'); if(b){ e.stopImmediatePropagation(); ov.hidden=true; running=true; last=0; raf=requestAnimationFrame(step);} },true);
 })();
 </script>
 
